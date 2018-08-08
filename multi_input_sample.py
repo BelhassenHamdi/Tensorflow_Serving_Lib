@@ -2,18 +2,18 @@ import tensorflow as tf
 import numpy as np
 import sys, os
 
-tf.app.flags.DEFINE_integer('model_version', 1, 'version number of the model.')
+tf.app.flags.DEFINE_integer('model_version', 2, 'version number of the model.')
 FLAGS = tf.app.flags.FLAGS
 
-a = tf.placeholder(tf.float32, shape=(None, 10))
+a = tf.placeholder(tf.float32, shape=(None, 10), name="a")
 b = tf.layers.dense(a, 2)
-c = tf.nn.sigmoid(b)
+c = tf.nn.sigmoid(b, name="c")
 
-aa = tf.placeholder(tf.float32, shape=(10, 5))
+aa = tf.placeholder(tf.float32, shape=(10, 5), name="aa")
 d = tf.layers.dense(aa, 3, activation=tf.nn.softmax)
 
-x = tf.nn.softmax(tf.matmul(a,aa), name='y')
-e = tf.reduce_mean(d, axis=1)
+x = tf.nn.softmax(tf.matmul(a,aa), name='x')
+e = tf.reduce_mean(d, axis=1, name="e")
 
 sess = tf.InteractiveSession()
 
@@ -21,12 +21,14 @@ sess.run(tf.global_variables_initializer())
 
 e_f = np.random.uniform(0,1,(10,5))
 a_f = np.random.uniform(0,1,(4,10))
+# print("e_f", e_f)
+# print("a_f", a_f)
 
 print("a_f", e_f.shape, "a_f" , a_f.shape)
 
 res_a, res_aa, res_x = sess.run([e,c, x], feed_dict={ a : a_f ,aa : e_f })
 
-print("a_f", res_a.shape, "a_f" , res_aa.shape, "res_x", res_x.shape)
+print("a_f", res_a, "\naa_f" , res_aa, "\nres_x", res_x)
 
 
 
@@ -76,7 +78,7 @@ legacy_init_op = tf.group(tf.tables_initializer(), name='legacy_init_op')
 builder.add_meta_graph_and_variables(
     sess, [tf.saved_model.tag_constants.SERVING],
     signature_def_map={
-        'predict_images':
+        'prediction':
             prediction_signature,
     },
     legacy_init_op=legacy_init_op)
